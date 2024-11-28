@@ -4,7 +4,7 @@
 * 3. initialize any textures
 * 4. start drawing
  */
-import { mat4 } from "gl-matrix";
+import { mat4, vec4 } from "gl-matrix";
 
 // initialization
 const root = document.getElementById("snippet"); // div element
@@ -18,11 +18,13 @@ const vertShaderSrc = `#version 300 es
 precision mediump float;
 in vec3 a_pos;
 in vec2 a_tex; // texture coords
-uniform mat4 u_mat;
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_proj;
 out vec2 v_tex;
 
 void main() {
-  gl_Position = u_mat * vec4(a_pos, 1.0);
+  gl_Position = u_proj * u_view * u_model * vec4(a_pos, 1.0);
   v_tex = a_tex;
 }
 `;
@@ -52,7 +54,6 @@ const vertData = [
 
 // gl context
 function main() {
-    console.log("starting")
     const canvas = document.createElement("canvas");
     canvas.width = 500;
     canvas.height = 500;
@@ -84,7 +85,9 @@ function main() {
     gl.enableVertexAttribArray(texAttribLoc);
     gl.vertexAttribPointer(texAttribLoc, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
 
-    let matUniformLoc = gl.getUniformLocation(program, "u_mat");
+    let modelUniformLoc = gl.getUniformLocation(program, "u_model");
+    let viewUniformLoc = gl.getUniformLocation(program, "u_view");
+    let projUniformLoc = gl.getUniformLocation(program, "u_proj");
     let texUniformLoc = gl.getUniformLocation(program, "u_tex");
 
     // create the texture
@@ -103,10 +106,29 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
     gl.useProgram(program);
 
-    gl.uniformMatrix4fv(matUniformLoc, false, mat4.create())
-    gl.uniform1i(texUniformLoc, 0);
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    console.log("finished")
+    let pos = vec4.create();
+    let model = mat4.create();
+
+    // view matrix
+    let view = mat4.create();
+    let camPos = [0,0,5];
+    mat4.lookAt(view, camPos, [0,0,0], [0,1,0]);
+
+    // projection matrix
+    let proj = mat4.create();
+    mat4.perspective(proj, Math.PI/4, canvas.width/canvas.height, 0.1, 100);
+
+    // start loop
+    function loop(time) {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniformMatrix4fv(modelUniformLoc, false, model);
+        gl.uniformMatrix4fv(viewUniformLoc, false, view);
+        gl.uniformMatrix4fv(projUniformLoc, false, proj);
+        gl.uniform1i(texUniformLoc, 0);
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+        requestAnimationFrame(loop);
+    }
+    loop();
 }
 
 // utils
