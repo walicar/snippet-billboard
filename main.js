@@ -95,6 +95,7 @@ const floorVertData = [
 ]
 
 // gl context
+let isBillboardOn = true;
 function main() {
     const canvas = document.createElement("canvas");
     canvas.width = 500;
@@ -178,7 +179,7 @@ function main() {
 
     // view matrix
     let view = mat4.create();
-    let camPos = [0, 3, 5];
+    let camPos = [2.5, 3, 5];
     mat4.lookAt(view, camPos, [0, 0, 0], [0, 1, 0]);
 
     // projection matrix
@@ -192,6 +193,24 @@ function main() {
         // sprite
         gl.bindVertexArray(vao);
         gl.useProgram(program);
+
+        if (isBillboardOn) {
+            let camModel = mat4.clone(view);
+            mat4.invert(camModel, camModel);
+            // x axis
+            model[0] = camModel[0];
+            model[1] = camModel[1];
+            model[2] = camModel[2];
+            // y axis
+            model[4] = camModel[4];
+            model[5] = camModel[5];
+            model[6] = camModel[6];
+            // z axis
+            model[8] = camModel[8];
+            model[9] = camModel[9];
+            model[10] = camModel[10];
+        }
+
         gl.uniformMatrix4fv(modelUniformLoc, false, model);
         gl.uniformMatrix4fv(viewUniformLoc, false, view);
         gl.uniformMatrix4fv(projUniformLoc, false, proj);
