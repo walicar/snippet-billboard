@@ -95,9 +95,28 @@ const floorVertData = [
 ]
 
 // gl context
-let isBillboardOn = true;
+let isBillboardOn = false;
 function main() {
+    // setup UI
+    const slider = document.createElement("input");
+    slider.type = "range";
+    const samples = 50;
+    slider.min = -samples;
+    slider.max = samples;
+    slider.value = 0;
+    slider.style.position = "absolute";
+    slider.style.zIndex = 1;
+    root.appendChild(slider);
+    const button = document.createElement("button");
+    button.textContent = "Enable Billboarding";
+    button.style.position = "absolute";
+    button.style.zIndex = 1;
+    root.appendChild(button);
+    button.style.marginTop = "30px";
+    button.style.marginLeft = "15px";
     const canvas = document.createElement("canvas");
+    canvas.style.position = "absolute";
+    canvas.style.zIndex = -1;
     canvas.width = 500;
     canvas.height = 500;
     root.appendChild(canvas);
@@ -185,6 +204,21 @@ function main() {
     // projection matrix
     let proj = mat4.create();
     mat4.perspective(proj, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
+
+    slider.addEventListener("input", () => {
+        console.log(slider.value)
+        mat4.rotateY(view, view, slider.value / (slider.max / 3.14 ));
+    })
+
+    button.onclick = () => {
+        isBillboardOn = !isBillboardOn;
+        if (!isBillboardOn) {
+            model = mat4.create();
+            button.textContent = "Enable Billboarding";
+        } else {
+            button.textContent = "Disable Billboarding";
+        }
+    };
 
     // start loop
     function loop(time) {
