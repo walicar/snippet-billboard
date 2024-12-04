@@ -9,34 +9,28 @@ import { mat4, vec4 } from "gl-matrix";
 // initialization
 const root = document.getElementById("snippet"); // div element
 
-let images = await loadImages(["/smile.png"]);
-let image = images[0];
-
 // shaders
 const vertSrc = `#version 300 es
 precision mediump float;
 in vec3 a_pos;
-in vec2 a_tex; // texture coords
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_proj;
-out vec2 v_tex;
-out vec2 v_pos;
+out vec3 v_pos;
 
 void main() {
   gl_Position = u_proj * u_view * u_model * vec4(a_pos, 1.0);
-  v_tex = a_tex;
+  v_pos = (u_model * vec4(a_pos, 1.0)).xyz;
 }
 `;
 
 const fragSrc = `#version 300 es
 precision mediump float;
-in vec2 v_tex;
-uniform sampler2D u_tex;
+in vec3 v_pos;
 out vec4 outColor;
 
 void main() {
-    outColor = texture(u_tex, 1.0 - v_tex);
+    outColor = vec4(v_pos.x,v_pos.y,v_pos.z,1.0);
 }
 `;
 
@@ -74,13 +68,13 @@ void main() {
 // a flat 2d box in 3d space
 const vertData = [
     // bottom right
-    1.0, -1.0, 0.0, 1.0, 0.0,
+    1.0, -1.0, 0.0,
     // bottom left
-    -1.0, -1.0, 0.0, 0.0, 0.0,
+    -1.0, -1.0, 0.0,
     // top left
-    -1.0, 1.0, 0.0, 0.0, 1.0,
+    -1.0, 1.0, 0.0,
     // top right
-    1.0, 1.0, 0.0, 1.0, 1.0,
+    1.0, 1.0, 0.0,
 ]
 
 const floorVertData = [
@@ -145,16 +139,11 @@ function main() {
 
     let posAttribLoc = gl.getAttribLocation(program, "a_pos");
     gl.enableVertexAttribArray(posAttribLoc);
-    gl.vertexAttribPointer(posAttribLoc, 3, gl.FLOAT, false, 5 * 4, 0);
-
-    let texAttribLoc = gl.getAttribLocation(program, "a_tex");
-    gl.enableVertexAttribArray(texAttribLoc);
-    gl.vertexAttribPointer(texAttribLoc, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+    gl.vertexAttribPointer(posAttribLoc, 3, gl.FLOAT, false, 3 * 4, 0);
 
     let modelUniformLoc = gl.getUniformLocation(program, "u_model");
     let viewUniformLoc = gl.getUniformLocation(program, "u_view");
     let projUniformLoc = gl.getUniformLocation(program, "u_proj");
-    let texUniformLoc = gl.getUniformLocation(program, "u_tex");
 
     let floorVao = gl.createVertexArray();
     gl.bindVertexArray(floorVao);
@@ -170,16 +159,6 @@ function main() {
     let modelUniformLocFloor = gl.getUniformLocation(floorProgram, "u_model");
     let viewUniformLocFloor = gl.getUniformLocation(floorProgram, "u_view");
     let projUniformLocFloor = gl.getUniformLocation(floorProgram, "u_proj");
-
-    // create the textures
-    let texture = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0 + 0);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
     // start drawing
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -221,7 +200,7 @@ function main() {
     };
 
     // start loop
-    function loop(time) {
+    function loop() {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         // sprite
@@ -248,7 +227,6 @@ function main() {
         gl.uniformMatrix4fv(modelUniformLoc, false, model);
         gl.uniformMatrix4fv(viewUniformLoc, false, view);
         gl.uniformMatrix4fv(projUniformLoc, false, proj);
-        gl.uniform1i(texUniformLoc, 0);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
         // floor object
@@ -284,21 +262,6 @@ function createProgram(gl, vertShader, fragShader) {
     if (success) return program;
     console.log(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
-}
-
-async function loadImages(urls) {
-    let promises = []
-    for (const url of urls) promises.push(loadImage(url));
-    return await Promise.all(promises);
-}
-
-function loadImage(url) {
-    return new Promise((resolve, reject) => {
-        let image = document.createElement("img")
-        image.src = url;
-        image.onload = () => resolve(image)
-        image.onerror = (e) => reject(new Error(`Failed to load image ${url}: ${e.message}`))
-    });
 }
 
 main();
