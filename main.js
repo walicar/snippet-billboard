@@ -8,6 +8,8 @@ import { mat4, vec4 } from "gl-matrix";
 
 // initialization
 const root = document.getElementById("snippet-1"); // div element
+root.style.position = "relative";
+root.style.height = "500px";
 
 // shaders
 const vertSrc = `#version 300 es
@@ -108,9 +110,14 @@ function main() {
     root.appendChild(button);
     button.style.marginTop = "30px";
     button.style.marginLeft = "15px";
+    button.style.background = "#020617"
+    button.style.color = "#f9fafb"
+    button.style.padding = "5px";
+    button.style.boxShadow = "5px";
+    button.style.borderRadius = "2%"
     const canvas = document.createElement("canvas");
     canvas.style.position = "absolute";
-    canvas.style.zIndex = -1;
+    canvas.style.zIndex = 0;
     canvas.width = 500;
     canvas.height = 500;
     root.appendChild(canvas);
