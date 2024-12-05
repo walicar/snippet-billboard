@@ -7,7 +7,7 @@
 import { mat4, vec4 } from "gl-matrix";
 
 // initialization
-const root = document.getElementById("snippet"); // div element
+const root = document.getElementById("snippet-1"); // div element
 
 // shaders
 const vertSrc = `#version 300 es
