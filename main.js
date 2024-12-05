@@ -192,7 +192,6 @@ function main() {
     mat4.perspective(proj, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
 
     slider.addEventListener("input", () => {
-        console.log(slider.value)
         mat4.rotateY(view, view, slider.value / (slider.max / 3.14 ));
     })
 
