@@ -174,7 +174,6 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
     gl.useProgram(program);
 
-    let pos = vec4.create();
     let model = mat4.create();
 
     let floorModel = mat4.create();
