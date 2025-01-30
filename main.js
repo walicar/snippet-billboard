@@ -185,13 +185,17 @@ function main() {
     let view = mat4.create();
     let camPos = [2.5, 3, 5];
     mat4.lookAt(view, camPos, [0, 0, 0], [0, 1, 0]);
+    let initView = mat4.clone(view);
 
     // projection matrix
     let proj = mat4.create();
     mat4.perspective(proj, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
 
     slider.addEventListener("input", () => {
-        mat4.rotateY(view, view, slider.value / (slider.max / 3.14 ));
+        mat4.copy(view, initView);
+        const angle = (slider.value / slider.max) * Math.PI * 2;
+        mat4.rotateY(view, view, angle);
+        draw()
     })
 
     button.onclick = () => {
@@ -204,8 +208,7 @@ function main() {
         }
     };
 
-    // start loop
-    function loop() {
+    function draw() {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         // sprite
@@ -241,10 +244,8 @@ function main() {
         gl.uniformMatrix4fv(viewUniformLocFloor, false, view);
         gl.uniformMatrix4fv(projUniformLocFloor, false, proj);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-        requestAnimationFrame(loop);
     }
-    loop();
+    draw();
 }
 
 // utils
