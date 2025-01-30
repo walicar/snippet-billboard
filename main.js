@@ -206,6 +206,7 @@ function main() {
         } else {
             button.textContent = "Disable Billboarding";
         }
+        draw()
     };
 
     function draw() {
