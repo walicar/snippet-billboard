@@ -6,6 +6,8 @@
  */
 import { mat4, vec4 } from "gl-matrix";
 
+function run() {
+
 // initialization
 const root = document.getElementById("snippet-1"); // div element
 root.style.position = "relative";
@@ -21,8 +23,8 @@ uniform mat4 u_proj;
 out vec3 v_pos;
 
 void main() {
-  gl_Position = u_proj * u_view * u_model * vec4(a_pos, 1.0);
-  v_pos = (u_model * vec4(a_pos, 1.0)).xyz;
+    gl_Position = u_proj * u_view * u_model * vec4(a_pos, 1.0);
+    v_pos = (u_model * vec4(a_pos, 1.0)).xyz;
 }
 `;
 
@@ -272,3 +274,6 @@ function createProgram(gl, vertShader, fragShader) {
 }
 
 main();
+}
+
+run();
